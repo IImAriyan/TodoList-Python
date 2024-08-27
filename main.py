@@ -60,7 +60,7 @@ def AddTodo():
 
 # Read Todo By ID
 @app.route('/api/Todo/<int:id>', methods=['GET'])
-def readTodoById(id) :
+def ReadTodoById(id) :
     cursor.execute("SELECT * FROM todos ")
     result = cursor.fetchall()
 
