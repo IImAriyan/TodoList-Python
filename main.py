@@ -18,6 +18,7 @@ cursor = mydb.cursor();
 
 
 @app.route('/')
+
 def index():
     return flask.jsonify({"message": "Hello World"})
 
@@ -25,6 +26,7 @@ def index():
 
 # SHOW TODOS
 @app.route('/api/Todo/list', methods=['GET'])
+
 def Todoslist():
     cursor.execute("SELECT * FROM todos");
     result = cursor.fetchall()
@@ -38,6 +40,7 @@ def Todoslist():
 
 # ADD Todo Function
 @app.route('/api/Todo/add ', methods=['POST'])
+
 def AddTodo():
 
     # Get Body
@@ -60,6 +63,7 @@ def AddTodo():
 
 # Read Todo By ID
 @app.route('/api/Todo/<int:id>', methods=['GET'])
+
 def ReadTodoById(id) :
     cursor.execute("SELECT * FROM todos ")
     result = cursor.fetchall()
@@ -73,9 +77,28 @@ def ReadTodoById(id) :
 
     # if not id in database
     if not finded:
-        return flask.jsonify({"message": "No todo was found with the entered id","statusCode":404})
+        return flask.jsonify({"message": "No todo was found with the "+str(id)+" id","statusCode":404})
 
 
+
+# Update Todo With ID
+@app.route("/api/Todo/update/<int:id>", methods=['POST'])
+
+def UpdateTodo(id):
+    data = flask.request.json
+    if (data.get('title') == None or data.get('description') == None ):
+        flask.request.status_code = 400
+        return flask.jsonify({"message": "Missing data","statusCode":400})
+    else :
+        title = data.get('title')
+
+        description = data.get('description')
+
+        # Update Todo In DataBase
+        cursor.execute("UPDATE todos SET title=%s, description=%s WHERE todoID=%s", (title, description, id))
+
+        # Return Response
+        return flask.jsonify({"message": "Todo Updated","statusCode":200})
 
 if (__name__ == '__main__'):
     app.run(port=8080)
