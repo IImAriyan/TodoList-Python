@@ -1,7 +1,9 @@
 # Hello
 import flask
-
 import mysql.connector
+
+runWithPort = 8080
+
 app = flask.Flask(__name__)
 
 # Connecting To Database
@@ -86,19 +88,57 @@ def ReadTodoById(id) :
 
 def UpdateTodo(id):
     data = flask.request.json
-    if (data.get('title') == None or data.get('description') == None ):
-        flask.request.status_code = 400
-        return flask.jsonify({"message": "Missing data","statusCode":400})
-    else :
-        title = data.get('title')
+    cursor.execute("SELECT * FROM todos ")
+    result = cursor.fetchall()
 
-        description = data.get('description')
+    finded = False
+    # Find Todo By ID
+    for x in result:
+        if x[0] == id:
+            finded = True
+            if (data.get('title') == None or data.get('description') == None):
+                flask.request.status_code = 400
+                return flask.jsonify({"message": "Missing data", "statusCode": 400})
+            else:
+                title = data.get('title')
 
-        # Update Todo In DataBase
-        cursor.execute("UPDATE todos SET title=%s, description=%s WHERE todoID=%s", (title, description, id))
+                description = data.get('description')
 
-        # Return Response
-        return flask.jsonify({"message": "Todo Updated","statusCode":200})
+                # Update Todo In DataBase
+                cursor.execute("UPDATE todos SET title=%s, description=%s WHERE todoID=%s", (title, description, id))
+
+                # Return Response
+                return flask.jsonify({"message": "Todo Updated", "statusCode": 200})
+
+    # if not id in database
+    if not finded:
+        return flask.jsonify({"message": "No todo was found with the "+str(id)+" id","statusCode":404})
+
+
+# Delete Todo With ID
+@app.route("/api/Todo/delete/<int:id>", methods=['POST'])
+
+def DeleteTodo(id):
+    # Getting All Todos
+    cursor.execute("SELECT * FROM todos")
+
+    result = cursor.fetchall()
+
+    finded = False
+
+    for x in result:
+        if x[0] == id:
+            finded = True
+
+            # Delete Todo In Database
+
+            cursor.execute("DELETE FROM `todos` WHERE todoID = '%s'" % (id,))
+
+
+            return flask.jsonify({"message": "Todo Deleted With Id : " + str(id), "statusCode": 200})
+
+    if not finded:
+        return flask.jsonify({"message": "No todo was found with the "+str(id)+" id","statusCode":404})
 
 if (__name__ == '__main__'):
-    app.run(port=8080)
+    app.run(port=runWithPort)
