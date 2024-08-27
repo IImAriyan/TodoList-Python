@@ -2,7 +2,7 @@
 
 ### with
 
-![Python]("ttps://skillicons.dev/icons?i=python")
+![Python]("https://skillicons.dev/icons?i=python")
 
 --- 
 
