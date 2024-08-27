@@ -2,7 +2,7 @@
 
 ### with
 
-![My Skills](https://skillicons.dev/icons?i=js,ts,html,css,tailwind,bootstrap,angular,react,net,php,cs,figma,rider,lua,nodejs,python,git,github,photoshop)
+![My Skills](https://skillicons.dev/icons?i=python)
 
 --- 
 
