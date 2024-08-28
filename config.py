@@ -26,5 +26,10 @@ config = {
     "titleIsRequired":True,
     "descriptionIsRequired":True,
 
+    # Status Codes
 
+    "done":200,
+    "not-found":404,
+    "error":400,
+    "BadMethod":405,
 }

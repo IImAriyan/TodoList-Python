@@ -34,9 +34,6 @@ cursor = mydb.cursor();
 def index():
     return flask.jsonify({"message": "Hello User"})
 
-@app.route('/**')
-def start():
-    return flask.jsonify({"message": "Hello User"})
 # SHOW TODOS
 @app.route(rule=config.config['todoListROUTE'], methods=config.config.get("todoListMETHOD"))
 def Todoslist():
@@ -48,7 +45,7 @@ def Todoslist():
         todo = Todo(x[0],x[1],x[2])
         todos.append( {"title":todo.title,"description":todo.description,"id":todo.id})
 
-    return flask.jsonify(todos)
+    return flask.jsonify(todos) , config.config['done']
 
 # ADD Todo Function
 @app.route(rule=config.config['todoAddROUTE'], methods=config.config.get("todoAddMETHOD"))
@@ -60,7 +57,7 @@ def AddTodo():
 
     if (data.get('title') == None and config.config['titleIsRequired'] == True or data.get('description') == None ) and config.config['descriptionIsRequired'] == True:
         flask.request.status_code = 400
-        return flask.jsonify({"message": "Missing data","statusCode":400})
+        return flask.jsonify({"message": "Missing data","statusCode":400}) ,config.config['error']
     else:
 
         if config.config['titleIsRequired'] == False :
@@ -74,7 +71,7 @@ def AddTodo():
         cursor.execute("INSERT INTO todos (title, description) VALUES (%s, %s)", (todo.title, todo.description))
         mydb.commit()
 
-        return flask.jsonify({"message": "Todo Successfully Added","statusCode":200})
+        return flask.jsonify({"message": "Todo Successfully Added","statusCode":200}) , config.config['done']
 
 
 # Read Todo By ID
@@ -90,11 +87,11 @@ def ReadTodoById(id) :
         if x[0] == id:
             finded = True
             todo = Todo(x[0],x[1],x[2])
-            return flask.jsonify({"title":todo.title,"description":todo.description,"id":todo.title})
+            return flask.jsonify({"title":todo.title,"description":todo.description,"id":todo.title}), config.config['done']
 
     # if not id in database
     if not finded:
-        return flask.jsonify({"message": "No todo was found with the "+str(id)+" id","statusCode":404})
+        return flask.jsonify({"message": "No todo was found with the "+str(id)+" id","statusCode":404}) , config.config['not-found']
 
 
 
@@ -113,7 +110,7 @@ def UpdateTodo(id):
             finded = True
             if (data.get('title') == None and config.config.get("titleIsRequired") == True or data.get('description') == None and config.config.get("descriptionIsRequired") == True):
                 flask.request.status_code = 400
-                return flask.jsonify({"message": "Missing data", "statusCode": 400})
+                return flask.jsonify({"message": "Missing data", "statusCode": 400}) , config.config['error']
             else:
                 title = data.get('title')
 
@@ -138,7 +135,7 @@ def UpdateTodo(id):
                 mydb.commit()
 
                 # Return Response
-                return flask.jsonify({"message": "Todo Updated", "statusCode": 200})
+                return flask.jsonify({"message": "Todo Updated", "statusCode": 200}), config.config['done']
 
     # if not id in database
     if not finded:
@@ -165,10 +162,19 @@ def DeleteTodo(id):
             cursor.execute("DELETE FROM `todos` WHERE todoID = '%s'" % (id,))
             mydb.commit()
 
-            return flask.jsonify({"message": "Todo Deleted With Id : " + str(id), "statusCode": 200})
+            return flask.jsonify({"message": "Todo Deleted With Id : " + str(id), "statusCode": 200}) , config.config['done']
 
     if not finded:
-        return flask.jsonify({"message": "No todo was found with the "+str(id)+" id","statusCode":404})
+        return flask.jsonify({"message": "No todo was found with the "+str(id)+" id","statusCode":404}) , config.config['not-found']
+
+
+@app.errorhandler(404)
+def not_found(error):
+    return flask.jsonify({"message": "Page Not Found","statusCode":404}) , config.config['not-found']
+
+@app.errorhandler(405)
+def method_not_defined(error):
+    return flask.jsonify({"message":"Method Not Defined","statusCode":405}) , config.config['BadMethod']
 
 if (__name__ == '__main__'):
     if (config.config.get("titleIsRequired") == False and config.config.get("descriptionIsRequired") == False):
